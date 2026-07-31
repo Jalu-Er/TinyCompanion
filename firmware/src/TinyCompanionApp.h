@@ -21,6 +21,7 @@
 #include "EventSystem/EventDispatcher.h"
 #include "EventSystem/EventHistory.h"
 #include "EventSystem/EventStatistics.h"
+#include "StateMachine.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -44,6 +45,7 @@ private:
     EventDispatcher eventDispatcher;
     EventHistory eventHistory;
     EventStatistics eventStatistics;
+    StateMachine stateMachine;
 
     // 3. Application Managers
     SensorManager sensorManager;
@@ -56,6 +58,7 @@ private:
 
     // Static callback wrappers matching Scheduler.h TaskCallback type
     static void pollSensorsCallback();
+    static void updateFsmCallback();
     static void updateLedCallback();
     static void updateOledCallback();
     static void updateTm1637Callback();

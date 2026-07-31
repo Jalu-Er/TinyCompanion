@@ -3,47 +3,55 @@
  * @brief High-level Finite State Machine (FSM) manager.
  * 
  * Responsibilities:
- * - Manage transitions between companion states (Idle, Sleeping, Scared).
- * - Process incoming events from the queue to trigger state changes.
- * - Call output hooks on state transition boundaries.
- * 
- * TODO:
- * - [ ] Implement state transition validation matrices.
- * - [ ] Coordinate with the EmotionEngine during state shifts.
+ * - Manage transitions between companion states (Boot, Idle, Observing, etc.).
+ * - Implement StateContext interface for C++ State Pattern.
+ * - Broadcast STATE_CHANGED events upon transiting.
  */
 
 #pragma once
-#include "State.h"
+#include "StateContext.h"
+#include "CompanionState.h"
 #include "../EventSystem/Event.h"
-#include "../EmotionEngine/EmotionEngine.h"
+#include "../EventSystem/EventQueue.h"
 
-class StateMachine {
+class IState; // Forward declaration
+
+class StateMachine : public StateContext {
 private:
-    CompanionState currentState = CompanionState::IDLE;
-    EmotionEngine& emotionEngine;
+    IState* currentState;
+    EventQueue& eventQueue;
 
 public:
-    StateMachine(EmotionEngine& emotion) : emotionEngine(emotion) {}
+    /**
+     * @brief Constructs FSM and binds EventQueue output channel.
+     */
+    StateMachine(EventQueue& queue);
 
     /**
-     * @brief Evaluates an incoming event and changes state if a valid transition condition matches.
+     * @brief Boots FSM to target initial Boot State.
      */
-    void processEvent(const Event& event) {
-        // TODO: Handle state transitions based on the EventType
-        (void)event;
-    }
+    void begin();
 
     /**
-     * @brief Periodic update loop tick for active state operations (e.g. idle timeout checks).
-     * @param[in] dtMs Delta time in milliseconds since last update.
+     * @brief Passes incoming event trigger down to the active State class.
+     * @param[in] event Struct event.
      */
-    void tick(uint32_t dtMs) {
-        // TODO: Update current state countdowns or state-based updates
-        (void)dtMs;
-    }
+    void processEvent(const Event& event);
 
     /**
-     * @brief Retrieve the current active state.
+     * @brief Periodically ticks the active State's internal timers.
+     * @param[in] dtMs Time elapsed in milliseconds.
      */
-    CompanionState getCurrentState() const { return currentState; }
+    void tick(uint32_t dtMs);
+
+    /**
+     * @brief Concrete implementation of StateContext transition contract.
+     * @param[in] nextState Target behavior state enum index.
+     */
+    void transitionTo(CompanionState nextState) override;
+
+    /**
+     * @brief Read current state enum identifier.
+     */
+    CompanionState getCurrentState() const;
 };

@@ -32,6 +32,7 @@ enum class EventType : uint8_t {
     TIME_PERIOD_NIGHT,     // Night period started
     
     // State indicators
+    INITIALIZATION_FINISHED,
     EMOTION_CHANGED,
     STATE_CHANGED
 };

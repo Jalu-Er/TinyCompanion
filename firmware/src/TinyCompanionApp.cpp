@@ -28,6 +28,7 @@ TinyCompanionApp::TinyCompanionApp()
       eventDispatcher(),
       eventHistory(),
       eventStatistics(),
+      stateMachine(eventQueue),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -46,18 +47,27 @@ void TinyCompanionApp::begin() {
     // 1. Initialize hardware display registers
     oledDisplay.begin();
 
-    // 2. Register event consumers to the dispatcher
+    // 2. Initialize FSM Core to Boot State
+    stateMachine.begin();
+
+    // 3. Register event consumers to the dispatcher
     eventDispatcher.registerConsumer(&ledManager);
     eventDispatcher.registerConsumer(&displayManager);
     eventDispatcher.registerConsumer(&audioManager);
 
-    // 3. Register periodic tasks to scheduler
+    // 4. Register periodic tasks to scheduler
     scheduler.addTask("Sensors", TICK_PERIOD_SENSORS, pollSensorsCallback);
+    scheduler.addTask("FSM", TICK_PERIOD_LOGIC, updateFsmCallback);
     scheduler.addTask("LED", TICK_PERIOD_LOGIC, updateLedCallback);
     scheduler.addTask("OLED", TICK_PERIOD_RENDER, updateOledCallback);
     scheduler.addTask("TM1637", 200, updateTm1637Callback);
     scheduler.addTask("Audio", TICK_PERIOD_AUDIO, updateAudioCallback);
     scheduler.addTask("Validation", 1000, validationRunnerCallback);
+
+    // 5. Enqueue final boot event to trigger transition to Idle State
+    Event ev;
+    ev.type = EventType::INITIALIZATION_FINISHED;
+    eventQueue.enqueue(ev);
 
     Serial.println(F("Scheduler initialization complete. Running loop..."));
 }
@@ -84,9 +94,18 @@ void TinyCompanionApp::pollSensorsCallback() {
             appInstance->eventStatistics.recordEvent(ev.type);
             // 3. Print semantic event log to serial
             EventLogger::log(ev.type, now);
-            // 4. Dispatch event to consumers
+            // 4. Feed event into behavioral State Machine
+            appInstance->stateMachine.processEvent(ev);
+            // 5. Dispatch event to consumers
             appInstance->eventDispatcher.dispatch(ev);
         }
+    }
+}
+
+void TinyCompanionApp::updateFsmCallback() {
+    if (appInstance) {
+        // Tick active state internal countdown timers
+        appInstance->stateMachine.tick(TICK_PERIOD_LOGIC);
     }
 }
 
@@ -113,7 +132,9 @@ void TinyCompanionApp::validationRunnerCallback() {
     if (appInstance) {
         Serial.print(F("[HEARTBEAT] Uptime: "));
         Serial.print(millis() / 1000);
-        Serial.print(F("s | TouchPress Count: "));
+        Serial.print(F("s | FSM State: "));
+        Serial.print(static_cast<uint8_t>(appInstance->stateMachine.getCurrentState()));
+        Serial.print(F(" | TouchPress Count: "));
         Serial.print(appInstance->eventStatistics.getCounter(EventType::TOUCH_PRESSED));
         
         // Print the latest event type from the history trace for debug inspection
