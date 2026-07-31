@@ -14,6 +14,7 @@
 #include "HAL/IBuzzer.h"
 #include "StateMachine/State.h"
 #include "EventSystem/IEventConsumer.h"
+#include "ExpressionEngine/Expression.h"
 
 struct ToneStep {
     uint16_t frequencyHz;
@@ -35,12 +36,6 @@ public:
     AudioManager(IBuzzer& outputBuzzer);
     
     /**
-     * @brief Triggers a transition melody matches.
-     * @param[in] state New companion status.
-     */
-    void setState(CompanionState state);
-    
-    /**
      * @brief Ticks sound sweep playback. Called at 50 Hz.
      * @param[in] dtMs Time elapsed since last tick.
      */
@@ -48,4 +43,9 @@ public:
 
     // IEventConsumer implementation
     void onEvent(const Event& event) override;
+
+    /**
+     * @brief Triggers buzzer audio effects directly based on expression states.
+     */
+    void updateExpression(const Expression& expr);
 };

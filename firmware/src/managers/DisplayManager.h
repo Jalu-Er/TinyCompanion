@@ -16,6 +16,7 @@
 #include "HAL/ITm1637.h"
 #include "HAL/IRtcClock.h"
 #include "EventSystem/IEventConsumer.h"
+#include "ExpressionEngine/Expression.h"
 
 class DisplayManager : public IEventConsumer {
 private:
@@ -37,4 +38,9 @@ public:
 
     // IEventConsumer implementation
     void onEvent(const Event& event) override;
+
+    /**
+     * @brief Updates eye geometries on OLED display based on abstract expression profiles.
+     */
+    void updateExpression(const Expression& expr);
 };

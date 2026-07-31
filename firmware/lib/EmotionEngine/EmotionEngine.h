@@ -3,65 +3,45 @@
  * @brief Russell's 2D Valence-Arousal plane calculations and discrete emotion mapping.
  * 
  * Responsibilities:
- * - Maintain Valence and Arousal coordinates in real-time.
+ * - Maintain emotional variables (valence, arousal, trust, curiosity, fatigue).
+ * - Process FSM state updates and semantic events to modify internal values.
  * - Calculate emotional decay over cooperative tick intervals.
- * - Map current coordinates to discrete emotion classes.
- * 
- * TODO:
- * - [ ] Map the physical sensor events directly to Valence-Arousal updates.
- * - [ ] Implement decay algorithms based on the PersonalityProfile weight.
  */
 
 #pragma once
 #include <stdint.h>
+#include "EmotionState.h"
 #include "../PersonalityEngine/PersonalityEngine.h"
+#include "../StateMachine/CompanionState.h"
 #include "../EventSystem/Event.h"
-
-enum class DiscreteEmotion : uint8_t {
-    NEUTRAL = 0,
-    HAPPY,
-    SAD,
-    ANGRY,
-    SCARED,
-    BORED,
-    SLEEPY
-};
 
 class EmotionEngine {
 private:
-    int8_t valence = 0;   // Range [-100 to 100]
-    int8_t arousal = 0;   // Range [-100 to 100]
+    EmotionState currentEmotion;
     const PersonalityEngine& personality;
 
+    // Helper to clamp values within boundaries without floating point
+    int8_t clamp8(int16_t val, int8_t minVal, int8_t maxVal);
+    uint8_t clampU8(int16_t val, uint8_t minVal, uint8_t maxVal);
+
 public:
-    EmotionEngine(const PersonalityEngine& personalityEngine) 
-        : personality(personalityEngine) {}
+    EmotionEngine(const PersonalityEngine& personalityEngine);
 
     /**
-     * @brief Process queued events and update emotional states.
+     * @brief Modifies emotional state values based on event updates and current FSM state.
+     * @param[in] state Current active FSM state code.
+     * @param[in] event Struct event.
      */
-    void processEvent(const Event& event) {
-        // TODO: Handle event and shift valence/arousal based on current profile coefficients
-        (void)event;
-    }
+    void processStateAndEvent(CompanionState state, const Event& event);
 
     /**
-     * @brief Tick-based dynamic update loop (called at logic frequency, e.g. 100ms).
-     * @param[in] dtMs Delta time in milliseconds since the last call.
+     * @brief Ticks emotional values decay and sleeping fatigue recovery.
+     * @param[in] dtMs Cooperative task loop step duration in milliseconds.
      */
-    void tick(uint32_t dtMs) {
-        // TODO: Apply exponential decay to valence and arousal towards 0
-        (void)dtMs;
-    }
+    void tick(uint32_t dtMs, CompanionState currentState);
 
     /**
-     * @brief Resolve the current emotional variables to a discrete state.
+     * @brief Read the current internal emotional variables state.
      */
-    DiscreteEmotion getCurrentEmotion() const {
-        // TODO: Implement the 2D mapping logic from SDD Section 14
-        return DiscreteEmotion::NEUTRAL;
-    }
-
-    int8_t getValence() const { return valence; }
-    int8_t getArousal() const { return arousal; }
+    const EmotionState& getEmotionState() const;
 };

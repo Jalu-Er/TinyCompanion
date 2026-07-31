@@ -21,7 +21,10 @@
 #include "EventSystem/EventDispatcher.h"
 #include "EventSystem/EventHistory.h"
 #include "EventSystem/EventStatistics.h"
-#include "StateMachine.h"
+#include "StateMachine/StateMachine.h"
+#include "PersonalityEngine/PersonalityEngine.h"
+#include "EmotionEngine/EmotionEngine.h"
+#include "ExpressionEngine/ExpressionEngine.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -46,6 +49,9 @@ private:
     EventHistory eventHistory;
     EventStatistics eventStatistics;
     StateMachine stateMachine;
+    PersonalityEngine personalityEngine;
+    EmotionEngine emotionEngine;
+    ExpressionEngine expressionEngine;
 
     // 3. Application Managers
     SensorManager sensorManager;
@@ -59,6 +65,7 @@ private:
     // Static callback wrappers matching Scheduler.h TaskCallback type
     static void pollSensorsCallback();
     static void updateFsmCallback();
+    static void updateEmotionCallback();
     static void updateLedCallback();
     static void updateOledCallback();
     static void updateTm1637Callback();

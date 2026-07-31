@@ -28,3 +28,7 @@ void LedManager::onEvent(const Event& event) {
     // Placeholder to respond to semantic events and update led aura target state
     (void)event;
 }
+
+void LedManager::updateExpression(const Expression& expr) {
+    led.setAura(expr.aura);
+}

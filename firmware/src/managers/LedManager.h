@@ -13,6 +13,7 @@
 #pragma once
 #include "HAL/ILedAura.h"
 #include "EventSystem/IEventConsumer.h"
+#include "ExpressionEngine/Expression.h"
 
 class LedManager : public IEventConsumer {
 private:
@@ -41,4 +42,9 @@ public:
 
     // IEventConsumer implementation
     void onEvent(const Event& event) override;
+
+    /**
+     * @brief Resolves target led aura configurations directly from abstract expressions.
+     */
+    void updateExpression(const Expression& expr);
 };

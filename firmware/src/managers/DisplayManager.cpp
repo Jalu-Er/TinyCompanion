@@ -32,3 +32,8 @@ void DisplayManager::onEvent(const Event& event) {
     // Placeholder to respond to semantic events and update visual state on OLED/TM1637
     (void)event;
 }
+
+void DisplayManager::updateExpression(const Expression& expr) {
+    // Placeholder for future Eye Renderer calculations
+    (void)expr;
+}

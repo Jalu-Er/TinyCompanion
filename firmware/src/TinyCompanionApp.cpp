@@ -29,6 +29,9 @@ TinyCompanionApp::TinyCompanionApp()
       eventHistory(),
       eventStatistics(),
       stateMachine(eventQueue),
+      personalityEngine(),
+      emotionEngine(personalityEngine),
+      expressionEngine(),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -58,6 +61,7 @@ void TinyCompanionApp::begin() {
     // 4. Register periodic tasks to scheduler
     scheduler.addTask("Sensors", TICK_PERIOD_SENSORS, pollSensorsCallback);
     scheduler.addTask("FSM", TICK_PERIOD_LOGIC, updateFsmCallback);
+    scheduler.addTask("Emotion", TICK_PERIOD_LOGIC, updateEmotionCallback);
     scheduler.addTask("LED", TICK_PERIOD_LOGIC, updateLedCallback);
     scheduler.addTask("OLED", TICK_PERIOD_RENDER, updateOledCallback);
     scheduler.addTask("TM1637", 200, updateTm1637Callback);
@@ -96,7 +100,11 @@ void TinyCompanionApp::pollSensorsCallback() {
             EventLogger::log(ev.type, now);
             // 4. Feed event into behavioral State Machine
             appInstance->stateMachine.processEvent(ev);
-            // 5. Dispatch event to consumers
+            // 5. Feed event and FSM state into the Emotion Engine
+            appInstance->emotionEngine.processStateAndEvent(
+                appInstance->stateMachine.getCurrentState(), ev
+            );
+            // 6. Dispatch event to consumers
             appInstance->eventDispatcher.dispatch(ev);
         }
     }
@@ -106,6 +114,24 @@ void TinyCompanionApp::updateFsmCallback() {
     if (appInstance) {
         // Tick active state internal countdown timers
         appInstance->stateMachine.tick(TICK_PERIOD_LOGIC);
+    }
+}
+
+void TinyCompanionApp::updateEmotionCallback() {
+    if (appInstance) {
+        CompanionState state = appInstance->stateMachine.getCurrentState();
+        // 1. Tick emotional values decay over time
+        appInstance->emotionEngine.tick(TICK_PERIOD_LOGIC, state);
+        
+        // 2. Compute abstract expression based on updated emotions
+        Expression expr = appInstance->expressionEngine.calculateExpression(
+            appInstance->emotionEngine.getEmotionState(), state
+        );
+        
+        // 3. Directly feed presentation expressions into target managers
+        appInstance->ledManager.updateExpression(expr);
+        appInstance->displayManager.updateExpression(expr);
+        appInstance->audioManager.updateExpression(expr);
     }
 }
 
@@ -130,10 +156,17 @@ void TinyCompanionApp::updateAudioCallback() {
 
 void TinyCompanionApp::validationRunnerCallback() {
     if (appInstance) {
+        const EmotionState& emo = appInstance->emotionEngine.getEmotionState();
         Serial.print(F("[HEARTBEAT] Uptime: "));
         Serial.print(millis() / 1000);
         Serial.print(F("s | FSM State: "));
         Serial.print(static_cast<uint8_t>(appInstance->stateMachine.getCurrentState()));
+        Serial.print(F(" | Valence: "));
+        Serial.print(emo.valence);
+        Serial.print(F(" | Arousal: "));
+        Serial.print(emo.arousal);
+        Serial.print(F(" | Fatigue: "));
+        Serial.print(emo.fatigue);
         Serial.print(F(" | TouchPress Count: "));
         Serial.print(appInstance->eventStatistics.getCounter(EventType::TOUCH_PRESSED));
         

@@ -13,11 +13,9 @@
 
 AudioManager::AudioManager(IBuzzer& outputBuzzer) : buzzer(outputBuzzer) {}
 
-void AudioManager::setState(CompanionState state) {
-    if (state != activeState) {
-        activeState = state;
-        // TODO: Load matching melody steps based on the current state transition
-    }
+void AudioManager::updateExpression(const Expression& expr) {
+    // Play active buzzer tone sweeps matching target SoundEffect
+    (void)expr;
 }
 
 void AudioManager::tick(uint32_t dtMs) {
