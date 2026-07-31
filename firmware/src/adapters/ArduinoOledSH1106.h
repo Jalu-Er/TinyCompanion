@@ -31,7 +31,12 @@ public:
     void fillCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) override;
     void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) override;
     void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) override;
+    void drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint8_t color) override;
+    void fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint8_t color) override;
     void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) override;
     void drawText(int16_t x, int16_t y, const char* text, uint8_t size, uint8_t color) override;
     void drawBitmap(int16_t x, int16_t y, const uint8_t* bitmap, int16_t w, int16_t h, uint8_t color) override;
+
+    uint16_t getWidth() const override;
+    uint16_t getHeight() const override;
 };

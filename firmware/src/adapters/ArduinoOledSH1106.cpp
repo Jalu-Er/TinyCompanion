@@ -56,6 +56,16 @@ void ArduinoOledSH1106::fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uin
     oledDriver.fillRect(x, y, w, h, mappedColor);
 }
 
+void ArduinoOledSH1106::drawRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint8_t color) {
+    uint16_t mappedColor = (color != 0) ? SH110X_WHITE : SH110X_BLACK;
+    oledDriver.drawRoundRect(x, y, w, h, r, mappedColor);
+}
+
+void ArduinoOledSH1106::fillRoundRect(int16_t x, int16_t y, int16_t w, int16_t h, int16_t r, uint8_t color) {
+    uint16_t mappedColor = (color != 0) ? SH110X_WHITE : SH110X_BLACK;
+    oledDriver.fillRoundRect(x, y, w, h, r, mappedColor);
+}
+
 void ArduinoOledSH1106::drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) {
     uint16_t mappedColor = (color != 0) ? SH110X_WHITE : SH110X_BLACK;
     oledDriver.drawLine(x0, y0, x1, y1, mappedColor);
@@ -72,4 +82,12 @@ void ArduinoOledSH1106::drawText(int16_t x, int16_t y, const char* text, uint8_t
 void ArduinoOledSH1106::drawBitmap(int16_t x, int16_t y, const uint8_t* bitmap, int16_t w, int16_t h, uint8_t color) {
     uint16_t mappedColor = (color != 0) ? SH110X_WHITE : SH110X_BLACK;
     oledDriver.drawBitmap(x, y, bitmap, w, h, mappedColor);
+}
+
+uint16_t ArduinoOledSH1106::getWidth() const {
+    return oledDriver.width();
+}
+
+uint16_t ArduinoOledSH1106::getHeight() const {
+    return oledDriver.height();
 }
