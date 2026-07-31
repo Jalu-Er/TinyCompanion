@@ -3,19 +3,17 @@
  * @brief Concrete implementation for Analog LDR light sensor.
  * 
  * Responsibilities:
- * - Read LDR analog levels.
- * 
- * TODO:
- * - [ ] Implement analog reading functions.
+ * - Configure analog pin as INPUT.
+ * - Perform analogRead to return current light level intensity (0-1023).
  */
 
 #include "ArduinoLightSensor.h"
+#include <Arduino.h>
 
 ArduinoLightSensor::ArduinoLightSensor(uint8_t pin) : ldrPin(pin) {
-    // TODO: Initialize LDR pin
+    pinMode(ldrPin, INPUT);
 }
 
 uint16_t ArduinoLightSensor::getLightLevel() {
-    // TODO: Read LDR analog channel
-    return 0;
+    return analogRead(ldrPin);
 }

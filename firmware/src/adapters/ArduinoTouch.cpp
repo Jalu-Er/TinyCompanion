@@ -3,19 +3,17 @@
  * @brief Concrete implementation for TTP223 capacitive touch sensor.
  * 
  * Responsibilities:
- * - Read touch pin state.
- * 
- * TODO:
- * - [ ] Implement digital touch pin reads.
+ * - Configure touch digital pin as INPUT.
+ * - Perform pin reads to detect capacitive touch active-high transitions.
  */
 
 #include "ArduinoTouch.h"
+#include <Arduino.h>
 
 ArduinoTouch::ArduinoTouch(uint8_t pin) : touchPin(pin) {
-    // TODO: Initialize touch pin
+    pinMode(touchPin, INPUT);
 }
 
 bool ArduinoTouch::isTouched() {
-    // TODO: Read digital touch state
-    return false;
+    return (digitalRead(touchPin) == HIGH);
 }

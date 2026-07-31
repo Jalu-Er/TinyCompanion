@@ -16,6 +16,12 @@ This document registers and tracks the identified technical debt in **TinyCompan
 
 ## 2. Medium Priority Debt
 
+### Ultrasonic PulseIn Blocking
+*   **Why it exists:** The `ArduinoUltrasonic::getDistanceCm()` driver uses the standard Arduino blocking `pulseIn()` to capture the HC-SR04 echo pulse duration.
+*   **Impact:** Blocks CPU execution for up to **20 ms** on each read (dependent on object distance). This disrupts the cooperative task runner timing and could cause touch sensor event misses.
+*   **Proposed Resolution:** In Phase 8 (Optimization), rewrite the ultrasonic driver using Pin Change Interrupts (PCI) and a free hardware timer to measure echo durations asynchronously.
+*   **Priority:** Medium
+
 ### I2C Serial Wire Bus Blocking
 *   **Why it exists:** The standard Arduino `Wire` library uses blocking operations. Calling `display()` blocks the CPU execution for **39.1 ms** while transferring data over I2C.
 *   **Impact:** During this 39 ms period, the CPU cannot poll other sensors or update the FSM. This makes it impossible to achieve a clean 30 FPS update rate and might cause touch sensor tap misses.

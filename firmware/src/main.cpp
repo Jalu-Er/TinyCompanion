@@ -1,36 +1,51 @@
 /**
  * @file main.cpp
- * @brief Entry point selecting and executing the RGB LED Aura validation test runner.
+ * @brief Entry point selecting and executing the semantic sensor events validation test runner.
  * 
  * Responsibilities:
- * - Instantiate concrete hardware LED adapters.
- * - Execute the ambient lighting validation routine.
+ * - Instantiate concrete sensor and clock adapters.
+ * - Establish EventQueue and SensorManager bindings.
+ * - Delegate execution to the SensorValidation runner.
  * 
  * TODO:
- * - [ ] Switch between different hardware validators dynamically if needed.
+ * - [ ] Connect state machine and output presentation managers in next phase.
  */
 
 #include <Arduino.h>
 #include "Config.h"
-#include "adapters/ArduinoLed.h"
-#include "validation/LedValidation.h"
+#include "adapters/ArduinoUltrasonic.h"
+#include "adapters/ArduinoTouch.h"
+#include "adapters/ArduinoLightSensor.h"
+#include "adapters/ArduinoRtc.h"
+#include "EventSystem/EventQueue.h"
+#include "managers/SensorManager.h"
+#include "validation/SensorValidation.h"
 
-// Concrete adapter instance for RGB LEDs mapped to red, green, and blue pins
-static ArduinoLed ledAura(LED_RED, LED_GREEN, LED_BLUE);
+// 1. Concrete hardware adapters (using Config.h pinouts)
+static ArduinoUltrasonic ultrasonic(PIN_TRIG, PIN_ECHO);
+static ArduinoTouch touch(PIN_TOUCH);
+static ArduinoLightSensor light(PIN_LDR);
+static ArduinoRtc rtc;
 
-// Validation runner instance for LED Aura states
-static LedValidation ledValidator(ledAura);
+// 2. Event infrastructure
+static EventQueue eventQueue;
+
+// 3. Sensor manager orchestrator
+static SensorManager sensorManager(ultrasonic, touch, light, rtc, eventQueue);
+
+// 4. Test validation runner
+static SensorValidation sensorValidator(sensorManager, eventQueue);
 
 void setup() {
     Serial.begin(115200);
     while(!Serial); // Wait for Serial console on USB
     Serial.println(F("System booting..."));
 
-    // Execute the LED validation sequence
-    ledValidator.run();
+    // Execute the sensor validation test suite (blocks inside run())
+    sensorValidator.run();
 }
 
 void loop() {
-    // Keep system idle
-    delay(500);
+    // Execution will not reach here as validator blocks internally
+    delay(100);
 }

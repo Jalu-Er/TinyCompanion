@@ -1,39 +1,54 @@
 /**
  * @file SensorManager.h
- * @brief Periodically polls sensors, applies filter smoothing, and enqueues events.
+ * @brief Periodically polls hardware sensors, processes inputs using filters/hysteresis, and publishes semantic events.
  * 
  * Responsibilities:
- * - Hold references to input sensor interfaces (Touch, Ultrasonic, Light).
- * - Apply moving average smoothing or debouncers on raw inputs.
- * - Map threshold crossings to event triggers and write them to the EventQueue.
- * 
- * TODO:
- * - [ ] Implement a median filter array to stabilize HC-SR04 readings.
- * - [ ] Implement exponential filters for light level processing.
+ * - Collect raw data from Touch, Ultrasonic, LDR, and RTC abstractions.
+ * - Detect state transitions using hysteresis bands and edge triggering.
+ * - Enqueue clean semantic events into the EventQueue.
  */
 
 #pragma once
 #include "HAL/IUltrasonic.h"
 #include "HAL/ITouchSensor.h"
 #include "HAL/ILightSensor.h"
+#include "HAL/IRtcClock.h"
 #include "EventSystem/EventQueue.h"
+
+enum class TimePeriod : uint8_t {
+    UNKNOWN = 0,
+    MORNING,
+    AFTERNOON,
+    EVENING,
+    NIGHT
+};
 
 class SensorManager {
 private:
     IUltrasonic& ultrasonic;
     ITouchSensor& touch;
     ILightSensor& light;
+    IRtcClock& rtc;
     EventQueue& eventQueue;
 
-    // Filter states
+    // Internal filter and state tracking parameters
     bool lastTouchState = false;
-    uint32_t lastLdrFiltered = 0;
-    
+    bool isAmbientDark = false;
+    bool isUserNear = false;
+    TimePeriod currentPeriod = TimePeriod::UNKNOWN;
+
+    // Constant parameters for hysteresis
+    static constexpr uint8_t LDR_HYSTERESIS = 20;
+    static constexpr uint8_t DISTANCE_HYSTERESIS = 3;
+
+    // Helper to evaluate time period boundaries based on hour and minute
+    TimePeriod getPeriodForTime(uint8_t hour, uint8_t minute);
+
 public:
-    SensorManager(IUltrasonic& ultra, ITouchSensor& touchSensor, ILightSensor& lightSensor, EventQueue& queue);
+    SensorManager(IUltrasonic& ultra, ITouchSensor& touchSensor, ILightSensor& lightSensor, IRtcClock& rtcClock, EventQueue& queue);
     
     /**
-     * @brief Polls all physical sensors and schedules event triggers. Called at 20 Hz.
+     * @brief Polls all sensors. Should be called periodically (e.g. at 20 Hz / 50ms interval).
      */
     void poll();
 };

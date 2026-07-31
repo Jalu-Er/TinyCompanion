@@ -1,13 +1,10 @@
 /**
  * @file Event.h
- * @brief System event definitions and payload definitions.
+ * @brief System semantic event definitions and payload structures.
  * 
  * Responsibilities:
- * - Define EventType enums to classify system events.
- * - Map payload fields using memory-efficient unions (AVR-safe).
- * 
- * TODO:
- * - [ ] Verify that all planned sensor states map to EventTypes.
+ * - Define EventType enums to classify semantic system events.
+ * - Restrict exposure of raw hardware metrics (centimeters, ADC levels) to logic.
  */
 
 #pragma once
@@ -15,14 +12,26 @@
 
 enum class EventType : uint8_t {
     NONE = 0,
-    TOUCH_TRIGGERED,
+    
+    // Touch events (Edge detected)
+    TOUCH_PRESSED,
     TOUCH_RELEASED,
-    OBJECT_DETECTED_NEAR,  // Proximity <= 15cm
-    OBJECT_DETECTED_FAR,   // Proximity > 15cm && <= 80cm
-    OBJECT_LOST,           // Proximity > 80cm
-    LIGHT_LEVEL_DARK,      // LDR below Dark Threshold
-    LIGHT_LEVEL_BRIGHT,    // LDR above Dark Threshold
-    TICK_MINUTE,           // Triggered by RTC once per minute
+    
+    // Proximity events (Semantic zones)
+    USER_APPROACHING, // Object entered near zone (<= 15cm)
+    USER_LEAVING,     // Object left near zone (> 15cm)
+    
+    // Light events (Hysteresis filtered)
+    AMBIENT_DARK,     // Dark environment threshold crossed
+    AMBIENT_BRIGHT,   // Bright environment threshold crossed
+    
+    // RTC Period transitions
+    TIME_PERIOD_MORNING,   // Morning period started
+    TIME_PERIOD_AFTERNOON, // Afternoon period started
+    TIME_PERIOD_EVENING,   // Evening period started
+    TIME_PERIOD_NIGHT,     // Night period started
+    
+    // State indicators
     EMOTION_CHANGED,
     STATE_CHANGED
 };
@@ -30,7 +39,7 @@ enum class EventType : uint8_t {
 struct Event {
     EventType type;
     union {
-        uint16_t rawValue; // Optional raw data (distance, light level, etc.)
+        uint16_t metadata; // Diagnostic or status flags (never raw ADC/cm values)
         struct {
             uint8_t val1;
             uint8_t val2;
