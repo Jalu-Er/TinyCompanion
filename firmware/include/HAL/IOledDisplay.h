@@ -33,9 +33,12 @@ public:
     virtual void display() = 0;
     
     // Draw primitives
+    virtual void drawPixel(int16_t x, int16_t y, uint8_t color) = 0;
     virtual void drawCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) = 0;
     virtual void fillCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) = 0;
     virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) = 0;
     virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) = 0;
     virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) = 0;
+    virtual void drawText(int16_t x, int16_t y, const char* text, uint8_t size, uint8_t color) = 0;
+    virtual void drawBitmap(int16_t x, int16_t y, const uint8_t* bitmap, int16_t w, int16_t h, uint8_t color) = 0;
 };

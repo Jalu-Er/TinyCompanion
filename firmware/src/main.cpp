@@ -1,170 +1,82 @@
 /**
  * @file main.cpp
- * @brief Entry point, POST, and cooperative task scheduler.
+ * @brief Test application for validating the SH1106 I2C OLED display driver.
  * 
  * Responsibilities:
- * - Instantiate concrete adapters and inject dependencies into managers.
- * - Manage cooperative task rates without blocking loops.
- * - Execute Power-On Self-Test (POST).
+ * - Initialize OLED hardware via the HAL adapter.
+ * - Run a visual validation sequence displaying text, primitives, pixels, and bitmaps.
+ * - Ensure clean compilation and minimal footprint on Uno.
  * 
  * TODO:
- * - [ ] Implement a system watchdog timer to recover from locks.
- * - [ ] Implement precise battery diagnostics check during startup.
+ * - [ ] Connect other managers and sensors in later validation milestones.
  */
 
 #include <Arduino.h>
 #include "Config.h"
-#include "EventSystem/EventQueue.h"
-#include "PersonalityEngine/PersonalityEngine.h"
-#include "EmotionEngine/EmotionEngine.h"
-#include "StateMachine/StateMachine.h"
-#include "AnimationEngine/AnimationEngine.h"
-#include "AnimationEngine/EyeRenderer.h"
-
-// Concrete adapter headers (to be generated in src/adapters/)
-#include "adapters/ArduinoUltrasonic.h"
-#include "adapters/ArduinoTouch.h"
-#include "adapters/ArduinoLightSensor.h"
-#include "adapters/ArduinoRtc.h"
-#include "adapters/ArduinoBuzzer.h"
-#include "adapters/ArduinoLed.h"
 #include "adapters/ArduinoOledSH1106.h"
-#include "adapters/ArduinoTm1637.h"
 
-// System manager headers (to be generated in src/managers/)
-#include "managers/SensorManager.h"
-#include "managers/DisplayManager.h"
-#include "managers/AudioManager.h"
-#include "managers/LedManager.h"
+// Concrete adapter instance
+static ArduinoOledSH1106 oled;
 
-// Global instances
-static EventQueue globalEventQueue;
-static PersonalityEngine globalPersonality;
-static EmotionEngine globalEmotion(globalPersonality);
-static StateMachine globalStateMachine(globalEmotion);
-static AnimationEngine globalAnimation;
-
-// Hardware drivers
-static ArduinoUltrasonic adapterUltrasonic(PIN_TRIG, PIN_ECHO);
-static ArduinoTouch adapterTouch(PIN_TOUCH);
-static ArduinoLightSensor adapterLight(PIN_LDR);
-static ArduinoRtc adapterRtc;
-static ArduinoBuzzer adapterBuzzer(PIN_BUZZER);
-static ArduinoLed adapterLed(LED_RED, LED_GREEN, LED_BLUE);
-static ArduinoOledSH1106 adapterOled;
-static ArduinoTm1637 adapterTm1637(TM1637_CLK, TM1637_DIO);
-
-// Managers
-static SensorManager sensorManager(adapterUltrasonic, adapterTouch, adapterLight, globalEventQueue);
-static DisplayManager displayManager(adapterOled, adapterTm1637, adapterRtc);
-static AudioManager audioManager(adapterBuzzer);
-static LedManager ledManager(adapterLed);
-
-// Eye rendering pipeline
-static EyeRenderer eyeRenderer(adapterOled);
-
-// Cooperative task runner layouts
-struct Task {
-    void (*taskFunc)();
-    uint32_t periodMs;
-    uint32_t lastRunMs;
-};
-
-// Scheduler callback forwards
-static void taskPollSensors();
-static void taskUpdateLogic();
-static void taskUpdateAudio();
-static void taskRenderDisplay();
-
-static Task systemScheduler[] = {
-    { taskPollSensors,   TICK_PERIOD_SENSORS, 0 },
-    { taskUpdateLogic,   TICK_PERIOD_LOGIC,   0 },
-    { taskUpdateAudio,   TICK_PERIOD_AUDIO,   0 },
-    { taskRenderDisplay, TICK_PERIOD_RENDER,  0 }
+// Simple 8x8 checkmark validation bitmap stored in flash memory
+const uint8_t checkmarkBitmap[] PROGMEM = {
+    0b00000000,
+    0b00000001,
+    0b00000011,
+    0b00010110,
+    0b01011100,
+    0b00111000,
+    0b00010000,
+    0b00000000
 };
 
 void setup() {
     Serial.begin(115200);
+    Serial.println(F("Starting OLED validation sequence..."));
 
-    // 1. Initialize Display Adapters
-    adapterOled.begin();
-    adapterTm1637.clear();
+    // 1. Initialize display
+    oled.begin();
+    delay(500);
 
-    // 2. Run self-checks & POST indications (RGB flashing, quick chime)
-    adapterLed.setColor(255, 0, 0); // Red
-    adapterBuzzer.playTone(440);
-    delay(100);
-    adapterLed.setColor(0, 255, 0); // Green
-    adapterBuzzer.playTone(880);
-    delay(100);
-    adapterLed.setColor(0, 0, 255); // Blue
-    adapterBuzzer.stopTone();
-    delay(100);
-    adapterLed.setColor(0, 0, 0);   // Off
+    // 2. Display static test text
+    oled.clear();
+    oled.drawText(10, 15, "TinyCompanion", 1, 1);
+    oled.drawText(10, 35, "OLED Validation", 1, 1);
+    oled.display();
+    delay(2000);
 
-    // 3. Set default state checking clock readings
-    TimeStruct initialTime;
-    if (adapterRtc.getTime(initialTime)) {
-        // Enqueue simulated sunrise/sunset to boot FSM correctly
-        Event startupTimeEvent;
-        startupTimeEvent.type = (initialTime.hour >= BEDTIME_HOUR || initialTime.hour < WAKETIME_HOUR) 
-            ? EventType::LIGHT_LEVEL_DARK : EventType::LIGHT_LEVEL_BRIGHT;
-        globalEventQueue.enqueue(startupTimeEvent);
-    }
+    // 3. Clear screen
+    oled.clear();
+    oled.display();
+    delay(500);
+
+    // 4. Draw geometric primitives and pixel test
+    // Screen boundary border
+    oled.drawRect(0, 0, 128, 64, 1);
+    
+    // Custom lines
+    oled.drawLine(5, 5, 122, 5, 1);
+    oled.drawLine(5, 58, 122, 58, 1);
+
+    // Circle primitives
+    oled.drawCircle(32, 32, 12, 1);
+    oled.fillCircle(96, 32, 10, 1);
+
+    // Rectangle primitives
+    oled.drawRect(58, 22, 12, 20, 1);
+
+    // Individual pixel drawing
+    oled.drawPixel(64, 32, 0); // Clear a single pixel in the center of the rect
+
+    // 5. Render simple verification bitmap
+    oled.drawBitmap(60, 48, checkmarkBitmap, 8, 8, 1);
+
+    // Push buffer to display
+    oled.display();
+    Serial.println(F("OLED validation patterns rendered successfully."));
 }
 
 void loop() {
-    uint32_t currentMillis = millis();
-
-    // Loop cooperative scheduler tasks
-    for (auto& task : systemScheduler) {
-        if (currentMillis - task.lastRunMs >= task.periodMs) {
-            task.taskFunc();
-            task.lastRunMs = currentMillis;
-        }
-    }
-}
-
-static void taskPollSensors() {
-    sensorManager.poll();
-}
-
-static void taskUpdateLogic() {
-    Event currentEvent;
-
-    // Process queued events
-    while (globalEventQueue.dequeue(currentEvent)) {
-        globalStateMachine.processEvent(currentEvent);
-        globalEmotion.processEvent(currentEvent);
-    }
-
-    // Engine updates (100ms ticks)
-    globalStateMachine.tick(TICK_PERIOD_LOGIC);
-    globalEmotion.tick(TICK_PERIOD_LOGIC);
-
-    // Coordinate inputs to updates
-    globalAnimation.setEmotion(globalEmotion.getCurrentEmotion());
-    audioManager.setState(globalStateMachine.getCurrentState());
-    ledManager.setEmotion(globalEmotion.getValence(), globalEmotion.getArousal());
-}
-
-static void taskUpdateAudio() {
-    audioManager.tick(TICK_PERIOD_AUDIO);
-}
-
-static void taskRenderDisplay() {
-    // Tick frame interpolation
-    globalAnimation.tick(TICK_PERIOD_RENDER);
-    
-    // Clear screen
-    adapterOled.clear();
-    
-    // Procedural eye render
-    eyeRenderer.render(globalAnimation.getEyeParameters());
-    
-    // Push buffer to display hardware
-    adapterOled.display();
-    
-    // Tick segment outputs
-    displayManager.tick(TICK_PERIOD_RENDER);
+    // Keep display stable without blocking loop operations
+    delay(100);
 }
