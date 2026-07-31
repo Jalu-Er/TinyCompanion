@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/IOledDisplay.h"
 
 class ArduinoOledSH1106 : public IOledDisplay {

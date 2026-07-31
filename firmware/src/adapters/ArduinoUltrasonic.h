@@ -12,6 +12,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/IUltrasonic.h"
 
 class ArduinoUltrasonic : public IUltrasonic {

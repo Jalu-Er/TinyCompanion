@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/ITm1637.h"
 
 class ArduinoTm1637 : public ITm1637 {

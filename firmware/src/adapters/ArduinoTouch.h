@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/ITouchSensor.h"
 
 class ArduinoTouch : public ITouchSensor {

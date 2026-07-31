@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/ILightSensor.h"
 
 class ArduinoLightSensor : public ILightSensor {

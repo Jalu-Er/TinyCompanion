@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/ILedAura.h"
 
 class ArduinoLed : public ILedAura {

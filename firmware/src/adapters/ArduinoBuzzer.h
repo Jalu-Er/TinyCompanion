@@ -11,6 +11,7 @@
  */
 
 #pragma once
+#include <stdint.h>
 #include "HAL/IBuzzer.h"
 
 class ArduinoBuzzer : public IBuzzer {
