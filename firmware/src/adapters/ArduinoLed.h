@@ -4,10 +4,8 @@
  * 
  * Responsibilities:
  * - Implement ILedAura interface.
- * - Map PWM duty values to physical Red, Green, and Blue pins.
- * 
- * TODO:
- * - [ ] Verify that red, green, blue pins are mapped to PWM-capable Uno pins.
+ * - Manage active digital outputs based on current AuraState.
+ * - Compute non-blocking time-based blinking schedules internally.
  */
 
 #pragma once
@@ -19,9 +17,18 @@ private:
     uint8_t redPin;
     uint8_t greenPin;
     uint8_t bluePin;
+    
+    AuraState currentAura;
+    uint32_t lastUpdateTime;
+    bool blinkState; // Controls blinking toggle state
+
+    // Internal helper to apply raw digital values to the hardware pins
+    void writePins(bool r, bool g, bool b);
 
 public:
     ArduinoLed(uint8_t rPin, uint8_t gPin, uint8_t bPin);
     
-    void setColor(uint8_t r, uint8_t g, uint8_t b) override;
+    void setAura(AuraState state) override;
+    void clear() override;
+    void update() override;
 };

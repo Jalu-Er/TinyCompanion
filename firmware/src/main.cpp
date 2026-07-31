@@ -1,35 +1,36 @@
 /**
  * @file main.cpp
- * @brief Entry point selecting and executing the OLED hardware validation test runner.
+ * @brief Entry point selecting and executing the RGB LED Aura validation test runner.
  * 
  * Responsibilities:
- * - Instantiate concrete hardware display adapters.
- * - Delegate hardware checks to the dedicated validation module.
+ * - Instantiate concrete hardware LED adapters.
+ * - Execute the ambient lighting validation routine.
  * 
  * TODO:
- * - [ ] Connect behavior schedulers and sensor managers in subsequent milestones.
+ * - [ ] Switch between different hardware validators dynamically if needed.
  */
 
 #include <Arduino.h>
-#include "adapters/ArduinoOledSH1106.h"
-#include "validation/OledValidation.h"
+#include "Config.h"
+#include "adapters/ArduinoLed.h"
+#include "validation/LedValidation.h"
 
-// Concrete adapter instance
-static ArduinoOledSH1106 oledDisplay;
+// Concrete adapter instance for RGB LEDs mapped to red, green, and blue pins
+static ArduinoLed ledAura(LED_RED, LED_GREEN, LED_BLUE);
 
-// Validation runner instance
-static OledValidation oledValidator(oledDisplay);
+// Validation runner instance for LED Aura states
+static LedValidation ledValidator(ledAura);
 
 void setup() {
     Serial.begin(115200);
     while(!Serial); // Wait for Serial console on USB
     Serial.println(F("System booting..."));
 
-    // Execute the OLED validation sequence
-    oledValidator.run();
+    // Execute the LED validation sequence
+    ledValidator.run();
 }
 
 void loop() {
-    // Keep display stable without blocking loop operations
+    // Keep system idle
     delay(500);
 }

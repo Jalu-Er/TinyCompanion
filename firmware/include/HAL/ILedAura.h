@@ -3,25 +3,39 @@
  * @brief Hardware Abstraction Layer interface for RGB emotional indicator lights.
  * 
  * Responsibilities:
- * - Abstract hardware control of three individual PWM output channels (R, G, B).
- * - Handle color channel mapping without application layout awareness.
- * 
- * TODO:
- * - [ ] Implement concrete PWM fading mapping on Uno pins 11, 12, 13.
+ * - Define predefined emotional aura states for ambient feedback.
+ * - Supply an API expressing visual intent rather than direct pin control.
  */
 
 #pragma once
 #include <stdint.h>
+
+enum class AuraState : uint8_t {
+    Idle,
+    Happy,
+    Thinking,
+    Sleeping,
+    Alert,
+    Error
+};
 
 class ILedAura {
 public:
     virtual ~ILedAura() {}
     
     /**
-     * @brief Set specific values for RGB color intensities.
-     * @param[in] r Red intensity value (0-255).
-     * @param[in] g Green intensity value (0-255).
-     * @param[in] b Blue intensity value (0-255).
+     * @brief Transition the ambient lighting to a target emotional aura state.
+     * @param[in] state The target aura state (Idle, Happy, Thinking, Sleeping, Alert, Error).
      */
-    virtual void setColor(uint8_t r, uint8_t g, uint8_t b) = 0;
+    virtual void setAura(AuraState state) = 0;
+    
+    /**
+     * @brief Turn off all light channels and reset state parameters.
+     */
+    virtual void clear() = 0;
+    
+    /**
+     * @brief Execute periodic, non-blocking time checks to handle flashing or pulsing.
+     */
+    virtual void update() = 0;
 };
