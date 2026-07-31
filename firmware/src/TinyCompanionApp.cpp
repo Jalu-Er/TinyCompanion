@@ -25,6 +25,9 @@ TinyCompanionApp::TinyCompanionApp()
       oledDisplay(),
       tm1637(TM1637_CLK, TM1637_DIO),
       eventQueue(),
+      eventDispatcher(),
+      eventHistory(),
+      eventStatistics(),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -43,7 +46,12 @@ void TinyCompanionApp::begin() {
     // 1. Initialize hardware display registers
     oledDisplay.begin();
 
-    // 2. Register periodic tasks to scheduler
+    // 2. Register event consumers to the dispatcher
+    eventDispatcher.registerConsumer(&ledManager);
+    eventDispatcher.registerConsumer(&displayManager);
+    eventDispatcher.registerConsumer(&audioManager);
+
+    // 3. Register periodic tasks to scheduler
     scheduler.addTask("Sensors", TICK_PERIOD_SENSORS, pollSensorsCallback);
     scheduler.addTask("LED", TICK_PERIOD_LOGIC, updateLedCallback);
     scheduler.addTask("OLED", TICK_PERIOD_RENDER, updateOledCallback);
@@ -61,15 +69,23 @@ void TinyCompanionApp::loop() {
 
 // --- Scheduler Task Callbacks Implementation ---
 
+#include "EventSystem/EventLogger.h"
+
 void TinyCompanionApp::pollSensorsCallback() {
     if (appInstance) {
         appInstance->sensorManager.poll();
         
-        // Dequeue generated semantic events inside sensors task to demonstrate operations
         Event ev;
         while (appInstance->eventQueue.dequeue(ev)) {
-            Serial.print(F("[EVENT QUEUED] Type Code: "));
-            Serial.println(static_cast<uint8_t>(ev.type));
+            uint32_t now = millis();
+            // 1. Record in the history trace
+            appInstance->eventHistory.record(ev.type, now);
+            // 2. Record statistics counter
+            appInstance->eventStatistics.recordEvent(ev.type);
+            // 3. Print semantic event log to serial
+            EventLogger::log(ev.type, now);
+            // 4. Dispatch event to consumers
+            appInstance->eventDispatcher.dispatch(ev);
         }
     }
 }
@@ -94,8 +110,24 @@ void TinyCompanionApp::updateAudioCallback() {
 }
 
 void TinyCompanionApp::validationRunnerCallback() {
-    // Periodic status heartbeat printed to confirm timing fairness
-    Serial.print(F("[HEARTBEAT] System Uptime: "));
-    Serial.print(millis() / 1000);
-    Serial.println(F(" seconds."));
+    if (appInstance) {
+        Serial.print(F("[HEARTBEAT] Uptime: "));
+        Serial.print(millis() / 1000);
+        Serial.print(F("s | TouchPress Count: "));
+        Serial.print(appInstance->eventStatistics.getCounter(EventType::TOUCH_PRESSED));
+        
+        // Print the latest event type from the history trace for debug inspection
+        uint8_t count = appInstance->eventHistory.getCount();
+        if (count > 0) {
+            HistoryEntry entry;
+            if (appInstance->eventHistory.getEntry(count - 1, entry)) {
+                Serial.print(F(" | Latest History Code: "));
+                Serial.print(static_cast<uint8_t>(entry.type));
+                Serial.print(F(" at "));
+                Serial.print(entry.timestamp);
+                Serial.print(F(" ms"));
+            }
+        }
+        Serial.println();
+    }
 }

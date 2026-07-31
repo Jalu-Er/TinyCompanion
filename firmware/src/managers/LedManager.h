@@ -12,8 +12,9 @@
 
 #pragma once
 #include "HAL/ILedAura.h"
+#include "EventSystem/IEventConsumer.h"
 
-class LedManager {
+class LedManager : public IEventConsumer {
 private:
     ILedAura& led;
     
@@ -37,4 +38,7 @@ public:
      * @param[in] dtMs Elapsed duration since last execution.
      */
     void tick(uint32_t dtMs);
+
+    // IEventConsumer implementation
+    void onEvent(const Event& event) override;
 };

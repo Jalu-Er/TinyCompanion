@@ -35,3 +35,8 @@ void AudioManager::tick(uint32_t dtMs) {
         }
     }
 }
+
+void AudioManager::onEvent(const Event& event) {
+    // Placeholder to respond to semantic events and trigger chirp soundscapes on buzzer
+    (void)event;
+}

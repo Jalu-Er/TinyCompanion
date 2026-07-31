@@ -23,3 +23,8 @@ void LedManager::tick(uint32_t dtMs) {
     // TODO: Compute sine-wave breathing intensity scaling based on valence/arousal color targets
     (void)dtMs;
 }
+
+void LedManager::onEvent(const Event& event) {
+    // Placeholder to respond to semantic events and update led aura target state
+    (void)event;
+}

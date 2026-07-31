@@ -18,6 +18,9 @@
 #include "adapters/ArduinoOledSH1106.h"
 #include "adapters/ArduinoTm1637.h"
 #include "EventSystem/EventQueue.h"
+#include "EventSystem/EventDispatcher.h"
+#include "EventSystem/EventHistory.h"
+#include "EventSystem/EventStatistics.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -38,6 +41,9 @@ private:
 
     // 2. Shared Infrastructure
     EventQueue eventQueue;
+    EventDispatcher eventDispatcher;
+    EventHistory eventHistory;
+    EventStatistics eventStatistics;
 
     // 3. Application Managers
     SensorManager sensorManager;

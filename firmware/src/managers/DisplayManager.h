@@ -15,8 +15,9 @@
 #include "HAL/IOledDisplay.h"
 #include "HAL/ITm1637.h"
 #include "HAL/IRtcClock.h"
+#include "EventSystem/IEventConsumer.h"
 
-class DisplayManager {
+class DisplayManager : public IEventConsumer {
 private:
     IOledDisplay& oled;
     ITm1637& tm1637;
@@ -33,4 +34,7 @@ public:
      * @param[in] dtMs Time delta in milliseconds.
      */
     void tick(uint32_t dtMs);
+
+    // IEventConsumer implementation
+    void onEvent(const Event& event) override;
 };

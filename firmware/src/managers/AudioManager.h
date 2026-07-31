@@ -13,13 +13,14 @@
 #pragma once
 #include "HAL/IBuzzer.h"
 #include "StateMachine/State.h"
+#include "EventSystem/IEventConsumer.h"
 
 struct ToneStep {
     uint16_t frequencyHz;
     uint16_t durationMs;
 };
 
-class AudioManager {
+class AudioManager : public IEventConsumer {
 private:
     IBuzzer& buzzer;
     CompanionState activeState = CompanionState::IDLE;
@@ -44,4 +45,7 @@ public:
      * @param[in] dtMs Time elapsed since last tick.
      */
     void tick(uint32_t dtMs);
+
+    // IEventConsumer implementation
+    void onEvent(const Event& event) override;
 };

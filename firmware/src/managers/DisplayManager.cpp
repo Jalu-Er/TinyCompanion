@@ -27,3 +27,8 @@ void DisplayManager::tick(uint32_t dtMs) {
         tm1637.displayInteger(timeVal, true);
     }
 }
+
+void DisplayManager::onEvent(const Event& event) {
+    // Placeholder to respond to semantic events and update visual state on OLED/TM1637
+    (void)event;
+}
