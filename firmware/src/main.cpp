@@ -26,7 +26,7 @@ void setup() {
     Serial.println(F("System booting..."));
 
     // Execute the OLED validation sequence
-    oledValidator.runTest();
+    oledValidator.run();
 }
 
 void loop() {

@@ -19,6 +19,23 @@ This repository serves as a **software engineering portfolio** demonstrating:
 *   Zero dynamic allocations to prevent memory leaks in micro-SRAM (2 KB limit).
 *   Cooperative non-blocking task execution scheduling.
 
+### 1.1 Documentation Index
+*   **Design & Architecture:**
+    *   [Software Design Document](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/SOFTWARE_DESIGN_DOCUMENT.md) — Production design specification.
+    *   [High-Level Architecture Summary](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/ARCHITECTURE.md) — Onboarding layout guide.
+    *   [OLED Rendering Architecture](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/architecture/OLED_RENDERING.md) — Graphic layers and pipeline details.
+    *   [Technical Debt Registry](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/TECH_DEBT.md) — Categorized software debt.
+*   **Architecture Decision Records:**
+    *   [ADR Index](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/adr/) — Log of frozen structural decisions.
+*   **Testing & Diagnostics:**
+    *   [OLED Testing Manual](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/testing/OLED.md) — Pinout wiring and verification steps.
+    *   [OLED Performance Evaluation](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/testing/OLED_PERFORMANCE.md) — Benchmark results and recommendations.
+*   **Roadmaps & Guidelines:**
+    *   [Development Roadmap](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/ROADMAP.md) — Core engine milestones phases.
+    *   [Milestones Tracker](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/MILESTONES.md) — Version release requirements.
+    *   [Contributing Guidelines](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/CONTRIBUTING.md) — Code style, commit hooks, branch layouts.
+    *   [Changelog](file:///home/jalue/Documents/PlatformIO/Projects/TinyCompanion/docs/CHANGELOG.md) — Keeps logs of released iterations.
+
 ---
 
 ## 2. Project Goals

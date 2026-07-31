@@ -3,6 +3,7 @@
  * @brief Concrete execution code for OLED SH1106 display hardware validation tests.
  * 
  * Responsibilities:
+ * - Implement IValidation interface contract.
  * - Render static verification texts, shapes, lines, pixels, and checkmark bitmaps.
  * 
  * TODO:
@@ -27,7 +28,7 @@ const uint8_t checkmarkValidation[] PROGMEM = {
 OledValidation::OledValidation(IOledDisplay& oledDisplay) 
     : display(oledDisplay) {}
 
-void OledValidation::runTest() {
+void OledValidation::run() {
     Serial.println(F("Initializing OLED validation tests..."));
 
     // 1. Initialize display
@@ -71,4 +72,12 @@ void OledValidation::runTest() {
     // Push buffer to display
     display.display();
     Serial.println(F("OLED abstraction test patterns rendered successfully."));
+}
+
+const char* OledValidation::name() const {
+    return "OLED SH1106";
+}
+
+const char* OledValidation::description() const {
+    return "Validates the SH1106 128x64 display I2C connection, text output, and primitive coordinates.";
 }

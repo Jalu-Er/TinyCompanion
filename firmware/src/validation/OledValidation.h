@@ -12,16 +12,17 @@
 
 #pragma once
 #include "HAL/IOledDisplay.h"
+#include "validation/IValidation.h"
 
-class OledValidation {
+class OledValidation : public IValidation {
 private:
     IOledDisplay& display;
 
 public:
     OledValidation(IOledDisplay& oledDisplay);
 
-    /**
-     * @brief Executes the full validation sequence (static text, clear screen, geometry shapes, bitmaps).
-     */
-    void runTest();
+    // IValidation interface implementation
+    void run() override;
+    const char* name() const override;
+    const char* description() const override;
 };
