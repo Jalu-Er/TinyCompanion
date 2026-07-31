@@ -1,0 +1,32 @@
+# PlatformIO compiled files and directories
+.pio/
+.pioenvs/
+.piolibdeps/
+
+# Editor files and IDE project configurations
+.vscode/
+.vscode/.browse.c_cpp.db
+.vscode/ipch/
+.vscode/launch.json
+.vscode/tasks.json
+.vscode/c_cpp_properties.json
+.vscode/extensions.json
+.vscode/settings.json
+.clangd/
+.cache/
+
+# Compilation output and backups
+*.o
+*.a
+*.elf
+*.bin
+*.hex
+*.d
+*.su
+*~
+*.bak
+*.swp
+
+# OS generated files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,41 @@
+/**
+ * @file IOledDisplay.h
+ * @brief Hardware Abstraction Layer interface for OLED graphics display rendering.
+ * 
+ * Responsibilities:
+ * - Define basic screen buffer draw wrappers (circle, rect, line).
+ * - Isolate applications from display library drivers (e.g. Adafruit_SH1106).
+ * 
+ * TODO:
+ * - [ ] Implement concrete SH1106 I2C adapter using Wire or Adafruit SH1106 libraries.
+ */
+
+#pragma once
+#include <stdint.h>
+
+class IOledDisplay {
+public:
+    virtual ~IOledDisplay() {}
+    
+    /**
+     * @brief Initialize physical screen hardware and buffers.
+     */
+    virtual void begin() = 0;
+    
+    /**
+     * @brief Clear the internal screen layout buffers.
+     */
+    virtual void clear() = 0;
+    
+    /**
+     * @brief Push the local buffer state onto the physical display registers.
+     */
+    virtual void display() = 0;
+    
+    // Draw primitives
+    virtual void drawCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) = 0;
+    virtual void fillCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) = 0;
+    virtual void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) = 0;
+    virtual void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) = 0;
+    virtual void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) = 0;
+};
