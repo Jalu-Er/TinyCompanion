@@ -10,6 +10,8 @@
  */
 
 #include "DisplayManager.h"
+#include "Config.h"
+#include <Arduino.h>
 
 DisplayManager::DisplayManager(IOledDisplay& screen, ITm1637& segments, IRtcClock& clock)
     : oled(screen), tm1637(segments), rtc(clock), eyeRenderer(screen) {
@@ -45,5 +47,13 @@ void DisplayManager::updateExpression(const Expression& expr) {
 }
 
 void DisplayManager::renderDisplay() {
+    #ifdef RUN_RUNTIME_DIAGNOSTICS
+    digitalWrite(PIN_TIMING_MARKER, HIGH);
+    #endif
+
     eyeRenderer.render(currentExpression);
+
+    #ifdef RUN_RUNTIME_DIAGNOSTICS
+    digitalWrite(PIN_TIMING_MARKER, LOW);
+    #endif
 }

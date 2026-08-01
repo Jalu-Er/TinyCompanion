@@ -24,6 +24,8 @@
 
 #define PIN_BUZZER   8
 #define PIN_TOUCH    9
+#define PIN_TIMING_MARKER 10
+#define PIN_JITTER_MARKER 4
 
 #define PIN_LDR      A0
 

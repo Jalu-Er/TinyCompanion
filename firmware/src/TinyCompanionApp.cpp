@@ -55,6 +55,13 @@ void TinyCompanionApp::begin() {
     Serial.println(F("TinyCompanion Cooperative Scheduler Booting..."));
     Serial.println(F("============================================="));
 
+    #ifdef RUN_RUNTIME_DIAGNOSTICS
+    pinMode(PIN_TIMING_MARKER, OUTPUT);
+    digitalWrite(PIN_TIMING_MARKER, LOW);
+    pinMode(PIN_JITTER_MARKER, OUTPUT);
+    digitalWrite(PIN_JITTER_MARKER, LOW);
+    #endif
+
     // 1. Initialize hardware display registers
     oledDisplay.begin();
 
@@ -165,10 +172,18 @@ void TinyCompanionApp::updateEmotionCallback() {
 }
 
 void TinyCompanionApp::updateLedCallback() {
+    #ifdef RUN_RUNTIME_DIAGNOSTICS
+    digitalWrite(PIN_JITTER_MARKER, HIGH);
+    #endif
+
     if (appInstance) {
         // Handle blink toggles periodically
         appInstance->ledAura.update();
     }
+
+    #ifdef RUN_RUNTIME_DIAGNOSTICS
+    digitalWrite(PIN_JITTER_MARKER, LOW);
+    #endif
 }
 
 void TinyCompanionApp::updateOledCallback() {
