@@ -17,15 +17,18 @@
 #include "HAL/IRtcClock.h"
 #include "EventSystem/IEventConsumer.h"
 #include "ExpressionEngine/Expression.h"
+#include "EyeRenderer/EyeRenderer.h"
 
 class DisplayManager : public IEventConsumer {
 private:
     IOledDisplay& oled;
     ITm1637& tm1637;
     IRtcClock& rtc;
+    EyeRenderer eyeRenderer;
 
     uint32_t rtcPollTimerMs = 0;
     TimeStruct cachedTime = {0, 0, 0, 0};
+    Expression currentExpression;
 
 public:
     DisplayManager(IOledDisplay& screen, ITm1637& segments, IRtcClock& clock);
@@ -40,7 +43,12 @@ public:
     void onEvent(const Event& event) override;
 
     /**
-     * @brief Updates eye geometries on OLED display based on abstract expression profiles.
+     * @brief Updates stored eye expression profile.
      */
     void updateExpression(const Expression& expr);
+
+    /**
+     * @brief Clears, renders current eye shape, and flushes output buffer to physical screen.
+     */
+    void renderDisplay();
 };

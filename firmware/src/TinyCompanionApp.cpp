@@ -63,7 +63,7 @@ void TinyCompanionApp::begin() {
     scheduler.addTask("FSM", TICK_PERIOD_LOGIC, updateFsmCallback);
     scheduler.addTask("Emotion", TICK_PERIOD_LOGIC, updateEmotionCallback);
     scheduler.addTask("LED", TICK_PERIOD_LOGIC, updateLedCallback);
-    scheduler.addTask("OLED", TICK_PERIOD_RENDER, updateOledCallback);
+    scheduler.addTask("OLED", 67, updateOledCallback); // Strictly limited to 15 Hz refresh
     scheduler.addTask("TM1637", 200, updateTm1637Callback);
     scheduler.addTask("Audio", TICK_PERIOD_AUDIO, updateAudioCallback);
     scheduler.addTask("Validation", 1000, validationRunnerCallback);
@@ -143,7 +143,9 @@ void TinyCompanionApp::updateLedCallback() {
 }
 
 void TinyCompanionApp::updateOledCallback() {
-    // Future placeholder: render current eye state to oled buffer
+    if (appInstance) {
+        appInstance->displayManager.renderDisplay(); // Delegate render & display to DisplayManager at 15 Hz
+    }
 }
 
 void TinyCompanionApp::updateTm1637Callback() {
@@ -156,18 +158,73 @@ void TinyCompanionApp::updateAudioCallback() {
 
 void TinyCompanionApp::validationRunnerCallback() {
     if (appInstance) {
+        uint32_t uptimeS = millis() / 1000;
+        
+        // Rotate target visual expression validator every 3 seconds
+        uint8_t stage = (uptimeS / 3) % 6;
+        
+        Expression testExpr;
+        testExpr.pupilRadius = 5;
+        testExpr.eyelidOpen = 100;
+        testExpr.blinkIntervalS = 4;
+        testExpr.aura = AuraState::Idle;
+        testExpr.sound = SoundEffect::NONE;
+        
+        const char* shapeName = "Unknown";
+        
+        switch (stage) {
+            case 0:
+                testExpr.eyeShape = EyeShape::NORMAL;
+                shapeName = "Neutral";
+                break;
+            case 1:
+                testExpr.eyeShape = EyeShape::HAPPY;
+                testExpr.aura = AuraState::Happy;
+                shapeName = "Happy";
+                break;
+            case 2:
+                testExpr.eyeShape = EyeShape::SQUINT;
+                testExpr.eyelidOpen = 50;
+                testExpr.pupilRadius = 3;
+                testExpr.aura = AuraState::Thinking;
+                shapeName = "Thinking (Squint)";
+                break;
+            case 3:
+                testExpr.eyeShape = EyeShape::ALERT;
+                testExpr.pupilRadius = 8;
+                testExpr.aura = AuraState::Alert;
+                shapeName = "Alert";
+                break;
+            case 4:
+                testExpr.eyeShape = EyeShape::SLEEPY;
+                testExpr.eyelidOpen = 0;
+                testExpr.aura = AuraState::Sleeping;
+                shapeName = "Sleeping";
+                break;
+            case 5:
+                testExpr.eyeShape = EyeShape::NORMAL; // default error cross shape
+                testExpr.eyeShape = static_cast<EyeShape>(99); // Force default/unknown shape trigger
+                testExpr.eyelidOpen = 40;
+                testExpr.aura = AuraState::Error;
+                shapeName = "Error (Cross)";
+                break;
+        }
+        
+        // Push current test expression sequence directly to DisplayManager
+        appInstance->displayManager.updateExpression(testExpr);
+        
         const EmotionState& emo = appInstance->emotionEngine.getEmotionState();
-        Serial.print(F("[HEARTBEAT] Uptime: "));
-        Serial.print(millis() / 1000);
+        Serial.print(F("[VALIDATOR] Shape: "));
+        Serial.print(shapeName);
+        Serial.print(F(" | Uptime: "));
+        Serial.print(uptimeS);
         Serial.print(F("s | FSM State: "));
         Serial.print(static_cast<uint8_t>(appInstance->stateMachine.getCurrentState()));
         Serial.print(F(" | Valence: "));
         Serial.print(emo.valence);
         Serial.print(F(" | Arousal: "));
         Serial.print(emo.arousal);
-        Serial.print(F(" | Fatigue: "));
-        Serial.print(emo.fatigue);
-        Serial.print(F(" | TouchPress Count: "));
+        Serial.print(F(" | TouchPress: "));
         Serial.print(appInstance->eventStatistics.getCounter(EventType::TOUCH_PRESSED));
         
         // Print the latest event type from the history trace for debug inspection
@@ -177,9 +234,6 @@ void TinyCompanionApp::validationRunnerCallback() {
             if (appInstance->eventHistory.getEntry(count - 1, entry)) {
                 Serial.print(F(" | Latest History Code: "));
                 Serial.print(static_cast<uint8_t>(entry.type));
-                Serial.print(F(" at "));
-                Serial.print(entry.timestamp);
-                Serial.print(F(" ms"));
             }
         }
         Serial.println();

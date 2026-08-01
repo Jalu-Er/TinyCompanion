@@ -12,7 +12,14 @@
 #include "DisplayManager.h"
 
 DisplayManager::DisplayManager(IOledDisplay& screen, ITm1637& segments, IRtcClock& clock)
-    : oled(screen), tm1637(segments), rtc(clock) {}
+    : oled(screen), tm1637(segments), rtc(clock), eyeRenderer(screen) {
+    currentExpression.eyeShape = EyeShape::NORMAL;
+    currentExpression.pupilRadius = 5;
+    currentExpression.eyelidOpen = 100;
+    currentExpression.blinkIntervalS = 4;
+    currentExpression.aura = AuraState::Idle;
+    currentExpression.sound = SoundEffect::NONE;
+}
 
 void DisplayManager::tick(uint32_t dtMs) {
     rtcPollTimerMs += dtMs;
@@ -34,6 +41,10 @@ void DisplayManager::onEvent(const Event& event) {
 }
 
 void DisplayManager::updateExpression(const Expression& expr) {
-    // Placeholder for future Eye Renderer calculations
-    (void)expr;
+    currentExpression = expr;
+}
+
+void DisplayManager::renderDisplay() {
+    eyeRenderer.render(currentExpression);
+    oled.display();
 }
