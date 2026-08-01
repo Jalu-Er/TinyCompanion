@@ -11,6 +11,7 @@
 #include "TinyCompanionApp.h"
 #include "Config.h"
 #include <Arduino.h>
+#include "validation/AnimationValidation.h"
 
 // Static reference pointer to current application instance
 static TinyCompanionApp* appInstance = nullptr;
@@ -32,6 +33,7 @@ TinyCompanionApp::TinyCompanionApp()
       personalityEngine(),
       emotionEngine(personalityEngine),
       expressionEngine(),
+      animationController(),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -72,6 +74,12 @@ void TinyCompanionApp::begin() {
     Event ev;
     ev.type = EventType::INITIALIZATION_FINISHED;
     eventQueue.enqueue(ev);
+
+#ifdef RUN_ANIMATION_TESTS
+    // 6. Execute pure logic animation tests on boot
+    AnimationValidation animVal;
+    animVal.run();
+#endif
 
     Serial.println(F("Scheduler initialization complete. Running loop..."));
 }
@@ -128,9 +136,12 @@ void TinyCompanionApp::updateEmotionCallback() {
             appInstance->emotionEngine.getEmotionState(), state
         );
         
-        // 3. Directly feed presentation expressions into target managers
+        // 3. Set target expression into the AnimationController (500 ms transition)
+        uint32_t now = millis();
+        appInstance->animationController.setTarget(expr, 500, now);
+        
+        // 4. Directly feed presentation expressions into Led & Audio managers
         appInstance->ledManager.updateExpression(expr);
-        appInstance->displayManager.updateExpression(expr);
         appInstance->audioManager.updateExpression(expr);
     }
 }
@@ -144,7 +155,17 @@ void TinyCompanionApp::updateLedCallback() {
 
 void TinyCompanionApp::updateOledCallback() {
     if (appInstance) {
-        appInstance->displayManager.renderDisplay(); // Delegate render & display to DisplayManager at 15 Hz
+        uint32_t now = millis();
+        // 1. Step the animation controller
+        appInstance->animationController.tick(now);
+        
+        // 2. Sync the interpolated frame with displayManager
+        appInstance->displayManager.updateExpression(
+            appInstance->animationController.current()
+        );
+        
+        // 3. Flush visual buffer to screen at 15 Hz
+        appInstance->displayManager.renderDisplay();
     }
 }
 
@@ -210,8 +231,9 @@ void TinyCompanionApp::validationRunnerCallback() {
                 break;
         }
         
-        // Push current test expression sequence directly to DisplayManager
-        appInstance->displayManager.updateExpression(testExpr);
+        // Push current test expression sequence to AnimationController (500 ms transition)
+        uint32_t now = millis();
+        appInstance->animationController.setTarget(testExpr, 500, now);
         
         const EmotionState& emo = appInstance->emotionEngine.getEmotionState();
         Serial.print(F("[VALIDATOR] Shape: "));

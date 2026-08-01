@@ -25,6 +25,7 @@
 #include "PersonalityEngine/PersonalityEngine.h"
 #include "EmotionEngine/EmotionEngine.h"
 #include "ExpressionEngine/ExpressionEngine.h"
+#include "AnimationEngine/AnimationController.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -52,6 +53,7 @@ private:
     PersonalityEngine personalityEngine;
     EmotionEngine emotionEngine;
     ExpressionEngine expressionEngine;
+    AnimationController animationController;
 
     // 3. Application Managers
     SensorManager sensorManager;
