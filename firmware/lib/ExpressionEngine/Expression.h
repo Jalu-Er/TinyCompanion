@@ -34,4 +34,6 @@ struct Expression {
     uint8_t blinkIntervalS; // Scheduled blink loop frequency in seconds
     AuraState aura;
     SoundEffect sound;
+    int8_t pupilOffsetX;    // Horizontal offset from center [-10 to 10]
+    int8_t pupilOffsetY;    // Vertical offset from center [-10 to 10]
 };

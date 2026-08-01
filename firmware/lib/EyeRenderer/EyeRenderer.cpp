@@ -30,8 +30,6 @@ EyeGeometry EyeRenderer::calculateGeometry(const Expression& expr) {
     geo.left.r = r;
     geo.left.pupilR = pupilR;
     geo.left.closedH = closedH;
-    geo.left.pupilCx = geo.left.cx;
-    geo.left.pupilCy = geo.left.cy;
     geo.left.x = geo.left.cx - w / 2;
     geo.left.y = geo.left.cy - h / 2;
     
@@ -43,10 +41,14 @@ EyeGeometry EyeRenderer::calculateGeometry(const Expression& expr) {
     geo.right.r = r;
     geo.right.pupilR = pupilR;
     geo.right.closedH = closedH;
-    geo.right.pupilCx = geo.right.cx;
-    geo.right.pupilCy = geo.right.cy;
     geo.right.x = geo.right.cx - w / 2;
     geo.right.y = geo.right.cy - h / 2;
+    
+    // Default initial pupil center targets
+    geo.left.pupilCx = geo.left.cx;
+    geo.left.pupilCy = geo.left.cy;
+    geo.right.pupilCx = geo.right.cx;
+    geo.right.pupilCy = geo.right.cy;
     
     // Adjustments based on shape
     switch (expr.eyeShape) {
@@ -85,6 +87,61 @@ EyeGeometry EyeRenderer::calculateGeometry(const Expression& expr) {
             
         default:
             break;
+    }
+
+    // Apply pupil 2D offset and clamp to eye bounds (Boundary Safety)
+    // Left eye clamping
+    {
+        int16_t targetLeftCx = geo.left.pupilCx + expr.pupilOffsetX;
+        int16_t targetLeftCy = geo.left.pupilCy + expr.pupilOffsetY;
+
+        int16_t minLeftCx = geo.left.x + geo.left.pupilR + 2;
+        int16_t maxLeftCx = (geo.left.x + geo.left.w) - geo.left.pupilR - 2;
+        int16_t minLeftCy = geo.left.y + geo.left.pupilR + 2;
+        int16_t maxLeftCy = (geo.left.y + geo.left.h) - geo.left.pupilR - 2;
+
+        if (minLeftCx > maxLeftCx) {
+            geo.left.pupilCx = geo.left.cx;
+        } else {
+            if (targetLeftCx < minLeftCx) targetLeftCx = minLeftCx;
+            if (targetLeftCx > maxLeftCx) targetLeftCx = maxLeftCx;
+            geo.left.pupilCx = targetLeftCx;
+        }
+
+        if (minLeftCy > maxLeftCy) {
+            geo.left.pupilCy = geo.left.cy;
+        } else {
+            if (targetLeftCy < minLeftCy) targetLeftCy = minLeftCy;
+            if (targetLeftCy > maxLeftCy) targetLeftCy = maxLeftCy;
+            geo.left.pupilCy = targetLeftCy;
+        }
+    }
+
+    // Right eye clamping
+    {
+        int16_t targetRightCx = geo.right.pupilCx + expr.pupilOffsetX;
+        int16_t targetRightCy = geo.right.pupilCy + expr.pupilOffsetY;
+
+        int16_t minRightCx = geo.right.x + geo.right.pupilR + 2;
+        int16_t maxRightCx = (geo.right.x + geo.right.w) - geo.right.pupilR - 2;
+        int16_t minRightCy = geo.right.y + geo.right.pupilR + 2;
+        int16_t maxRightCy = (geo.right.y + geo.right.h) - geo.right.pupilR - 2;
+
+        if (minRightCx > maxRightCx) {
+            geo.right.pupilCx = geo.right.cx;
+        } else {
+            if (targetRightCx < minRightCx) targetRightCx = minRightCx;
+            if (targetRightCx > maxRightCx) targetRightCx = maxRightCx;
+            geo.right.pupilCx = targetRightCx;
+        }
+
+        if (minRightCy > maxRightCy) {
+            geo.right.pupilCy = geo.right.cy;
+        } else {
+            if (targetRightCy < minRightCy) targetRightCy = minRightCy;
+            if (targetRightCy > maxRightCy) targetRightCy = maxRightCy;
+            geo.right.pupilCy = targetRightCy;
+        }
     }
     
     return geo;

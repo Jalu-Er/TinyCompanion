@@ -5,11 +5,11 @@
 
 #include "BlinkController.h"
 
-BlinkController::BlinkController()
-    : state(BlinkState::IDLE),
+BlinkController::BlinkController(LcgPrng& prngInstance)
+    : prng(prngInstance),
+      state(BlinkState::IDLE),
       lastStateChangeMs(0),
       nextBlinkTimeMs(0),
-      prngState(5381),
       closingDurationMs(80),
       closedDurationMs(50),
       openingDurationMs(90),
@@ -18,19 +18,14 @@ BlinkController::BlinkController()
       isBlinkingFlag(false),
       currentBlinkFactor(100) {}
 
-uint16_t BlinkController::nextRandom() {
-    prngState = (1103515245UL * prngState + 12345UL) & 0x7FFFFFFFUL;
-    return static_cast<uint16_t>(prngState >> 16);
-}
-
 void BlinkController::scheduleNextBlink(uint32_t now) {
     uint32_t range = maxIntervalMs - minIntervalMs;
-    uint32_t offset = nextRandom() % range;
+    uint32_t offset = prng.next() % range;
     nextBlinkTimeMs = now + minIntervalMs + offset;
 }
 
 void BlinkController::setSeed(uint32_t seed) {
-    prngState = seed;
+    prng.setSeed(seed);
 }
 
 void BlinkController::forceBlink(uint32_t now) {

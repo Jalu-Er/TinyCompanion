@@ -13,6 +13,7 @@
 #include <Arduino.h>
 #include "validation/AnimationValidation.h"
 #include "validation/BlinkValidation.h"
+#include "validation/GazeValidation.h"
 
 // Static reference pointer to current application instance
 static TinyCompanionApp* appInstance = nullptr;
@@ -34,8 +35,10 @@ TinyCompanionApp::TinyCompanionApp()
       personalityEngine(),
       emotionEngine(personalityEngine),
       expressionEngine(),
+      prng(),
       animationController(),
-      blinkController(),
+      blinkController(prng),
+      gazeController(prng),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -87,6 +90,12 @@ void TinyCompanionApp::begin() {
     // 7. Execute pure logic blink overlay tests on boot
     BlinkValidation blinkVal;
     blinkVal.run();
+#endif
+
+#ifdef RUN_GAZE_TESTS
+    // 8. Execute pure logic gaze movement tests on boot
+    GazeValidation gazeVal;
+    gazeVal.run();
 #endif
 
     Serial.println(F("Scheduler initialization complete. Running loop..."));
@@ -174,10 +183,14 @@ void TinyCompanionApp::updateOledCallback() {
         appInstance->blinkController.tick(now, baseExpr.eyeShape);
         Expression overlaidExpr = appInstance->blinkController.applyOverlay(baseExpr);
         
-        // 4. Sync the overlaid frame with displayManager
-        appInstance->displayManager.updateExpression(overlaidExpr);
+        // 4. Step the gaze controller and apply overlay on top of blink-overlaid expression
+        appInstance->gazeController.tick(now, overlaidExpr.eyeShape);
+        Expression finalExpr = appInstance->gazeController.applyOverlay(overlaidExpr);
         
-        // 5. Flush visual buffer to screen at 15 Hz
+        // 5. Sync the final overlaid frame with displayManager
+        appInstance->displayManager.updateExpression(finalExpr);
+        
+        // 6. Flush visual buffer to screen at 15 Hz
         appInstance->displayManager.renderDisplay();
     }
 }

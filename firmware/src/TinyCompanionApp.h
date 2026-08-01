@@ -27,6 +27,8 @@
 #include "ExpressionEngine/ExpressionEngine.h"
 #include "AnimationEngine/AnimationController.h"
 #include "AnimationEngine/BlinkController.h"
+#include "AnimationEngine/LcgPrng.h"
+#include "AnimationEngine/GazeController.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -54,8 +56,10 @@ private:
     PersonalityEngine personalityEngine;
     EmotionEngine emotionEngine;
     ExpressionEngine expressionEngine;
+    LcgPrng prng;
     AnimationController animationController;
     BlinkController blinkController;
+    GazeController gazeController;
 
     // 3. Application Managers
     SensorManager sensorManager;

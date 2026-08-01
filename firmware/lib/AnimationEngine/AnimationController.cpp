@@ -13,6 +13,8 @@ AnimationController::AnimationController()
     currentExpr.blinkIntervalS = 4;
     currentExpr.aura = AuraState::Idle;
     currentExpr.sound = SoundEffect::NONE;
+    currentExpr.pupilOffsetX = 0;
+    currentExpr.pupilOffsetY = 0;
 
     targetExpr = currentExpr;
     startExpr = currentExpr;
@@ -39,6 +41,8 @@ void AnimationController::setTarget(const Expression& target, uint32_t duration,
     currentExpr.aura = target.aura;
     currentExpr.sound = target.sound;
     currentExpr.blinkIntervalS = target.blinkIntervalS;
+    currentExpr.pupilOffsetX = 0;
+    currentExpr.pupilOffsetY = 0;
 
     if (durationMs == 0) {
         currentExpr.pupilRadius = target.pupilRadius;

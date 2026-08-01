@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include "ExpressionEngine/Expression.h"
 
+#include "LcgPrng.h"
+
 enum class BlinkState : uint8_t {
     IDLE = 0,
     CLOSING,
@@ -22,10 +24,10 @@ enum class BlinkState : uint8_t {
 
 class BlinkController {
 private:
+    LcgPrng& prng;
     BlinkState state;
     uint32_t lastStateChangeMs;
     uint32_t nextBlinkTimeMs;
-    uint32_t prngState;
 
     // Timing parameters in milliseconds
     uint32_t closingDurationMs;
@@ -38,18 +40,13 @@ private:
     uint8_t currentBlinkFactor;
 
     /**
-     * @brief Generates next pseudo-random 16-bit unsigned integer using LCG.
-     */
-    uint16_t nextRandom();
-
-    /**
      * @brief Schedules the timestamp index for the next procedural blink.
      * @param[in] now Current time index in milliseconds.
      */
     void scheduleNextBlink(uint32_t now);
 
 public:
-    BlinkController();
+    BlinkController(LcgPrng& prngInstance);
 
     /**
      * @brief Sets seed for LCG random generator to ensure deterministic test runs.
