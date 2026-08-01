@@ -11,13 +11,12 @@
  */
 
 #pragma once
-#include <stdint.h>
-#include <Adafruit_SH110X.h>
+#include <U8g2lib.h>
 #include "HAL/IOledDisplay.h"
 
 class ArduinoOledSH1106 : public IOledDisplay {
 private:
-    Adafruit_SH1106G oledDriver;
+    U8G2_SH1106_128X64_NONAME_1_HW_I2C u8g2;
 
 public:
     ArduinoOledSH1106();
@@ -25,6 +24,9 @@ public:
     void begin() override;
     void clear() override;
     void display() override;
+    
+    void firstPage() override;
+    bool nextPage() override;
     
     void drawPixel(int16_t x, int16_t y, uint8_t color) override;
     void drawCircle(int16_t x0, int16_t y0, int16_t r, uint8_t color) override;

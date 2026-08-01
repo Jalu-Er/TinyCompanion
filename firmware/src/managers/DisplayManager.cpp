@@ -46,5 +46,4 @@ void DisplayManager::updateExpression(const Expression& expr) {
 
 void DisplayManager::renderDisplay() {
     eyeRenderer.render(currentExpression);
-    oled.display();
 }

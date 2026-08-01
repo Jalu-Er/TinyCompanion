@@ -18,6 +18,8 @@ public:
     void begin() override {}
     void clear() override {}
     void display() override {}
+    void firstPage() override {}
+    bool nextPage() override { return false; }
     void drawPixel(int16_t x, int16_t y, uint8_t color) override { (void)x; (void)y; (void)color; }
     void drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint8_t color) override { (void)x0; (void)y0; (void)x1; (void)y1; (void)color; }
     void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color) override { (void)x; (void)y; (void)w; (void)h; (void)color; }

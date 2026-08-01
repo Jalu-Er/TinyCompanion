@@ -219,15 +219,16 @@ void EyeRenderer::drawEye(const SingleEyeGeometry& eyeGeo, EyeShape shape) {
 }
 
 void EyeRenderer::render(const Expression& expr) {
-    // 1. Clear previous screen frame buffer contents
-    display.clear();
-    
-    // 2. Compute all coordinate parameters once
+    // 1. Compute all coordinate parameters once
     EyeGeometry geo = calculateGeometry(expr);
     
-    // 3. Draw Left Eye
-    drawEye(geo.left, expr.eyeShape);
-    
-    // 4. Draw Right Eye
-    drawEye(geo.right, expr.eyeShape);
+    // 2. Render complete scene per page iteration
+    display.firstPage();
+    do {
+        // Draw Left Eye
+        drawEye(geo.left, expr.eyeShape);
+        
+        // Draw Right Eye
+        drawEye(geo.right, expr.eyeShape);
+    } while (display.nextPage());
 }

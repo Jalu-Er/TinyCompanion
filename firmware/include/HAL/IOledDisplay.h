@@ -31,6 +31,10 @@ public:
      * @brief Push the local buffer state onto the physical display registers.
      */
     virtual void display() = 0;
+
+    // Page-buffer iteration methods
+    virtual void firstPage() = 0;
+    virtual bool nextPage() = 0;
     
     // Draw primitives
     virtual void drawPixel(int16_t x, int16_t y, uint8_t color) = 0;
