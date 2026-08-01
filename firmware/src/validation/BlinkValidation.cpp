@@ -13,11 +13,12 @@ BlinkValidation::BlinkValidation() {}
 
 void BlinkValidation::run() {
     Serial.println(F("\n--- Running BlinkController Pure Logic Validation ---"));
+    LcgPrng prng;
 
     // TC1: Initial scheduling produces a valid next-blink timestamp.
     {
         Serial.print(F("TC1 (Scheduling): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         bc.tick(1000, EyeShape::NORMAL);
         uint32_t nextTime = bc.getNextBlinkTime();
         if (nextTime > 1000 && bc.getState() == BlinkState::IDLE) {
@@ -31,7 +32,7 @@ void BlinkValidation::run() {
     // TC2 & TC3: Trigger conditions
     {
         Serial.print(F("TC2 & TC3 (Trigger Timing): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         bc.tick(1000, EyeShape::NORMAL);
         uint32_t nextTime = bc.getNextBlinkTime();
 
@@ -54,7 +55,7 @@ void BlinkValidation::run() {
     // TC4: Blink phase progression
     {
         Serial.print(F("TC4 (Phase Progression): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         bc.forceBlink(1000);
         
         // closing duration is 80ms
@@ -90,7 +91,7 @@ void BlinkValidation::run() {
     // TC5: Non-blocking execution verified by fast runtime
     {
         Serial.print(F("TC5 (Non-blocking): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         uint32_t tStart = micros();
         bc.tick(1000, EyeShape::NORMAL);
         uint32_t tDiff = micros() - tStart;
@@ -107,7 +108,7 @@ void BlinkValidation::run() {
     // TC6: Millis Rollover safety
     {
         Serial.print(F("TC6 (Rollover Safety): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         
         // Start right before 32-bit rollover
         uint32_t tStart = 0xFFFFFFF0;
@@ -126,7 +127,7 @@ void BlinkValidation::run() {
     // TC7 & TC8: Forced Blink & Repeated Trigger Interruption
     {
         Serial.print(F("TC7 & TC8 (Forced & Repeated): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         
         // TC7: Force blink
         bc.forceBlink(1000);
@@ -150,7 +151,7 @@ void BlinkValidation::run() {
     // TC9: Sleeping Policy
     {
         Serial.print(F("TC9 (Sleeping Policy): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         bc.forceBlink(1000);
         
         // Sleeping shape suppresses active blink immediately and forces IDLE
@@ -175,7 +176,7 @@ void BlinkValidation::run() {
     // TC10: Error/Alert Policy
     {
         Serial.print(F("TC10 (Error & Alert Policy): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         
         // Alert allows blinking
         bc.tick(1000, EyeShape::ALERT);
@@ -187,7 +188,7 @@ void BlinkValidation::run() {
         }
 
         // Reset
-        BlinkController bc2;
+        BlinkController bc2(prng);
         // Error shape (shape code 99) suppresses blinking
         bc2.tick(1000, static_cast<EyeShape>(99));
         uint32_t errNextTime = bc2.getNextBlinkTime();
@@ -202,7 +203,7 @@ void BlinkValidation::run() {
     // TC11: Preservation of Expression Semantics
     {
         Serial.print(F("TC11 (Preserve Semantics): "));
-        BlinkController bc;
+        BlinkController bc(prng);
         Expression base;
         base.eyeShape = EyeShape::HAPPY;
         base.eyelidOpen = 75;
@@ -231,7 +232,7 @@ void BlinkValidation::run() {
     {
         Serial.print(F("TC12 (Animation + Blink Sync): "));
         AnimationController ac;
-        BlinkController bc;
+        BlinkController bc(prng);
         
         Expression target;
         target.eyeShape = EyeShape::NORMAL;
