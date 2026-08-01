@@ -26,6 +26,7 @@
 #include "EmotionEngine/EmotionEngine.h"
 #include "ExpressionEngine/ExpressionEngine.h"
 #include "AnimationEngine/AnimationController.h"
+#include "AnimationEngine/BlinkController.h"
 #include "managers/SensorManager.h"
 #include "managers/LedManager.h"
 #include "managers/DisplayManager.h"
@@ -54,6 +55,7 @@ private:
     EmotionEngine emotionEngine;
     ExpressionEngine expressionEngine;
     AnimationController animationController;
+    BlinkController blinkController;
 
     // 3. Application Managers
     SensorManager sensorManager;

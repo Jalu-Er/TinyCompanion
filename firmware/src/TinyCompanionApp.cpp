@@ -12,6 +12,7 @@
 #include "Config.h"
 #include <Arduino.h>
 #include "validation/AnimationValidation.h"
+#include "validation/BlinkValidation.h"
 
 // Static reference pointer to current application instance
 static TinyCompanionApp* appInstance = nullptr;
@@ -34,6 +35,7 @@ TinyCompanionApp::TinyCompanionApp()
       emotionEngine(personalityEngine),
       expressionEngine(),
       animationController(),
+      blinkController(),
       sensorManager(ultrasonic, touch, light, rtc, eventQueue),
       ledManager(ledAura),
       displayManager(oledDisplay, tm1637, rtc),
@@ -79,6 +81,12 @@ void TinyCompanionApp::begin() {
     // 6. Execute pure logic animation tests on boot
     AnimationValidation animVal;
     animVal.run();
+#endif
+
+#ifdef RUN_BLINK_TESTS
+    // 7. Execute pure logic blink overlay tests on boot
+    BlinkValidation blinkVal;
+    blinkVal.run();
 #endif
 
     Serial.println(F("Scheduler initialization complete. Running loop..."));
@@ -159,12 +167,17 @@ void TinyCompanionApp::updateOledCallback() {
         // 1. Step the animation controller
         appInstance->animationController.tick(now);
         
-        // 2. Sync the interpolated frame with displayManager
-        appInstance->displayManager.updateExpression(
-            appInstance->animationController.current()
-        );
+        // 2. Extract current interpolated base expression
+        Expression baseExpr = appInstance->animationController.current();
         
-        // 3. Flush visual buffer to screen at 15 Hz
+        // 3. Step the blink controller and apply overlay on top of base expression
+        appInstance->blinkController.tick(now, baseExpr.eyeShape);
+        Expression overlaidExpr = appInstance->blinkController.applyOverlay(baseExpr);
+        
+        // 4. Sync the overlaid frame with displayManager
+        appInstance->displayManager.updateExpression(overlaidExpr);
+        
+        // 5. Flush visual buffer to screen at 15 Hz
         appInstance->displayManager.renderDisplay();
     }
 }
