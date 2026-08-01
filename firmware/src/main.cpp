@@ -9,10 +9,13 @@
 
 #include "TinyCompanionApp.h"
 
+#include "HAL/AuditDiagnostics.h"
+
 // Unified application container instanced statically in global space
 static TinyCompanionApp app;
 
 void setup() {
+    initStackWatermark();
     // Initialize Composition Root structures and configure periodic scheduler
     app.begin();
 }

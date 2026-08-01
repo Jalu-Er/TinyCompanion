@@ -14,6 +14,7 @@
 #include "validation/AnimationValidation.h"
 #include "validation/BlinkValidation.h"
 #include "validation/GazeValidation.h"
+#include "HAL/AuditDiagnostics.h"
 
 // Static reference pointer to current application instance
 static TinyCompanionApp* appInstance = nullptr;
@@ -284,6 +285,20 @@ void TinyCompanionApp::validationRunnerCallback() {
                 Serial.print(static_cast<uint8_t>(entry.type));
             }
         }
+        
+        #ifdef RUN_RUNTIME_DIAGNOSTICS
+        uint16_t unusedStack = getUnusedStackSram();
+        uint16_t peakStack = 304 - unusedStack; // 304 is (2048 - 1744) available for stack
+        uint8_t pctUtil = (static_cast<uint32_t>(peakStack) * 100) / 304;
+        Serial.print(F(" | [DIAGNOSTIC] Peak Stack: "));
+        Serial.print(peakStack);
+        Serial.print(F(" bytes | Unused SRAM: "));
+        Serial.print(unusedStack);
+        Serial.print(F(" bytes | Util: "));
+        Serial.print(pctUtil);
+        Serial.print(F("%"));
+        #endif
+
         Serial.println();
     }
 }

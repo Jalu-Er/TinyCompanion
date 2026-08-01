@@ -6,21 +6,35 @@
 #pragma once
 #include <stdint.h>
 
-#ifdef RUN_DIAGNOSTICS
+#ifdef RUN_RUNTIME_DIAGNOSTICS
 extern unsigned int __heap_start;
-extern void *__brkval;
 
-inline int getFreeMemory() {
-    int free_memory;
-    if ((int)__brkval == 0) {
-        free_memory = ((int)&free_memory) - ((int)&__heap_start);
-    } else {
-        free_memory = ((int)&free_memory) - ((int)__brkval);
+inline void initStackWatermark() {
+    extern unsigned int __heap_start;
+    uint8_t *p = (uint8_t *)&__heap_start;
+    volatile uint8_t current_stack;
+    // Set limit 50 bytes below current stack frame pointer to prevent self-corruption
+    uint8_t *stack_limit = (uint8_t *)&current_stack - 50;
+    
+    while (p < stack_limit) {
+        *p = 0x55;
+        p++;
     }
-    return free_memory;
+}
+
+inline uint16_t getUnusedStackSram() {
+    extern unsigned int __heap_start;
+    uint8_t *p = (uint8_t *)&__heap_start;
+    uint16_t count = 0;
+    while (*p == 0x55) {
+        count++;
+        p++;
+    }
+    return count;
 }
 #else
-inline int getFreeMemory() {
-    return -1; // Disabled in production
+inline void initStackWatermark() {}
+inline uint16_t getUnusedStackSram() {
+    return 0;
 }
 #endif
